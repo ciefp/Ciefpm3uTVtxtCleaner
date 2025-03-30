@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciefp M3U/TV/TXT Čistač</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #23de84;
+            text-align: center;
+            padding: 20px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #downloadLink {
+            display: none;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #030203;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>..:: Ciefp M3U/TV/TXT Čistač ::..</h1>
+    <h2>Učitaj M3U, .TV ili .TXT fajl i ukloni nevidljive znakove</h2>
+    <input type="file" id="fileInput" accept=".m3u,.tv,.txt">
+    <button onclick="processFile()">Obradi fajl</button>
+    <div id="output"></div>
+    <a id="downloadLink">Preuzmi očišćeni fajl</a>
+    
+    <script>
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput.files.length === 0) {
+                alert('Izaberite fajl!');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                let content = event.target.result;
+                let originalLength = content.length;
+                
+                // Uklanjanje svih nevidljivih Unicode karaktera
+                let cleanedContent = content.replace(/[\u200B\u200C\u200D\u200E\u200F\u2060\u2061\u2062\u2063\uFEFF]/g, '');
+                let cleanedLength = cleanedContent.length;
+                let removedCount = originalLength - cleanedLength;
+                
+                // Priprema za preuzimanje
+                let blob = new Blob([cleanedContent], { type: 'text/plain' });
+                let url = URL.createObjectURL(blob);
+                
+                let fileExtension = file.name.split('.').pop().toLowerCase();
+                let newFilename = file.name.replace(/\.[^/.]+$/, "_cleaned." + fileExtension);
+                
+                let downloadLink = document.getElementById('downloadLink');
+                downloadLink.href = url;
+                downloadLink.download = newFilename;
+                downloadLink.style.display = 'block';
+                downloadLink.textContent = 'Preuzmi očišćeni fajl';
+                
+                let output = document.getElementById('output');
+                output.style.display = 'block';
+                output.innerHTML = `<p>Obrada završena!</p><p>Uklonjeno ${removedCount} problematičnih znakova.</p>`;
+            };
+            
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
